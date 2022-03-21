@@ -182,7 +182,7 @@ Result:
 ```
 Added 5 labels, created 5 nodes, set 16 properties, created 5 relationships, completed after 22 ms.
 ```
-![image](/pic/graph.png)
+![image](https://github.com/UselessOldQian/Project2Neo4j/blob/main/pic/graph.png)
 
 ### 3. Search Nodes
 - #### 3.1 Search All Nodes
