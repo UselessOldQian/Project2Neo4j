@@ -60,8 +60,8 @@ SQL for Oracle.
 |7|`ORDER BY`| Order the search data |
 |8|`SET`| Add or Update labels |
 
-- ### 1. Create Nodes
-- ####1.1 Create single node
+### 1. Create Nodes
+- ###1.1 Create single node
 
 Creating a single node:
 ```Cypher
@@ -72,7 +72,7 @@ Result:
 Created 1 node, completed after 11 ms.
 ```
 
-- ####1.2 Create multiple nodes
+- ###1.2 Create multiple nodes
 Creating multiple nodes is done by separating them with a comma.
 ```Cypher
 CREATE (n),(m)
@@ -82,7 +82,7 @@ Result:
 Created 2 nodes, completed in less than 1 ms.
 ```
 
-- ####1.3 Create a node with a label
+- ###1.3 Create a node with a label
 You can use the following code to add a node with a label:
 ```Cypher
 CREATE (n:Person)
@@ -92,7 +92,7 @@ Result:
 Added 1 label, created 1 node, completed after 24 ms.
 ```
 
-- ####1.4 Create a node with multiple labels
+- ###1.4 Create a node with multiple labels
 To add labels when creating a node, use the syntax below. In this case, we add two labels.
 ```Cypher
 CREATE (n:Person:Xingjian)
@@ -102,7 +102,7 @@ Result:
 Added 2 labels, created 1 node, completed after 39 ms.
 ```
 
-- ####1.5 Create node and add labels and properties
+- ###1.5 Create node and add labels and properties
 When creating a new node with labels, you can add properties at the same time.
 ```Cypher
 CREATE (n:Person {name: 'Xingjian', title: 'Student'})
@@ -112,7 +112,7 @@ Result:
 Added 1 label, created 1 node, set 2 properties, completed after 61 ms.
 ```
 
-- ####1.6. Return created node
+- ###1.6. Return created node
 Creating a single node is done by issuing the following query:
 ```Cypher
 CREATE (a {name: 'Xingjian'})
@@ -126,8 +126,8 @@ Result:
 │"Xingjian"│
 └──────────┘
 ```
-- ### 2. Create Relationships
-- #### 2.1 Create a relationship between two nodes
+### 2. Create Relationships
+- ### 2.1 Create a relationship between two nodes
 To create a relationship between two nodes, we first get the two nodes. Once the nodes are loaded, we simply create a relationship between them.
 ```
 MATCH
@@ -145,7 +145,7 @@ Result:
 │"RELTYPE"│
 └─────────┘
 ```
-- #### 2.2 Create a relationship and set properties
+- ### 2.2 Create a relationship and set properties
 Setting properties on relationships is done in a similar manner to how it’s done when creating nodes. Note that the values can be any expression.
 ```
 MATCH
@@ -163,7 +163,7 @@ Result:
 │"RELTYPE"│"Xingjian<->Craig"│
 └─────────┴──────────────────┘
 ```
-- #### 2.3 Create Multiple Nodes and Relationships
+- ### 2.3 Create Multiple Nodes and Relationships
 
 ```
 CREATE
@@ -182,15 +182,16 @@ Result:
 ```
 Added 5 labels, created 5 nodes, set 16 properties, created 5 relationships, completed after 22 ms.
 ```
+The graph constructed.   
 ![image](https://github.com/UselessOldQian/Project2Neo4j/blob/main/pic/graph.png)
 
-### 3. Search Nodes
-- #### 3.1 Search All Nodes
+### 3. Search
+- ### 3.1 Search All Nodes
 Use MATCH clause to search all the nodes.
 ```
 MATCH (n) RETURN n
 ```
-- #### 3.2 Search Nodes with Specific Lables and Attributes
+- ### 3.2 Search Nodes with Specific Lables and Attributes
 Like SQL, you can use Where clause to search nodes with specific attributes or labels and use return to get
 the result.
 ```
@@ -204,7 +205,7 @@ Result:
 │{"name":"Emil","from":"Sweden","klout":99}│
 └──────────────────────────────────────────┘
 ```
-- ####3.3 Related nodes
+- ###3.3 Related nodes
 The symbol -- means related to, without regard to type or direction of the relationship.
 ```
 MATCH (ee:Person)--(friends) WHERE ee.name = "Rik"
@@ -233,7 +234,7 @@ Result:
 │{"name":"Rik","from":"Belgium","pet":"Orval"}│{"name":"Allision","from":"California","hobby":"surfing"}│
 └─────────────────────────────────────────────┴─────────────────────────────────────────────────────────┘
 ```
-- #### 3.4 Relationship variable in variable length relationships
+- ### 3.4 Relationship variable in variable length relationships
 When the connection between two nodes is of variable length, the list of relationships comprising the connection can be returned using the following syntax:
 ```
 MATCH (n:Person {name: 'Rik'})-[:KNOWS*2]-(o:Person)
@@ -249,5 +250,89 @@ Result:
 │"Rik"   │"Ian"   │
 └────────┴────────┘
 ```
+- ### 3.5 Shortest Path
+Finding a single shortest path between two nodes is as easy as using the shortestPath function. It is done like this:
+```
+MATCH
+  (Rik:Person {name: 'Rik'}),
+  (Johan:Person {name: 'Johan'}),
+  p = shortestPath((Rik)-[*..3]-(Johan))
+RETURN p
+```
+Result:
+```
+╒══════════════════════════════════════════════════════════════════════╕
+│"p"                                                                   │
+╞══════════════════════════════════════════════════════════════════════╡
+│[{"name":"Rik","from":"Belgium","pet":"Orval"},{},{"name":"Emil","from│
+│":"Sweden","klout":99},{"name":"Emil","from":"Sweden","klout":99},{"si│
+│nce":2001},{"learn":"surfing","name":"Johan","from":"Sweden"}]        │
+└──────────────────────────────────────────────────────────────────────┘
+```
+![image](https://github.com/UselessOldQian/Project2Neo4j/blob/main/pic/path.png)
 
-[graph]:/pic/graph.png
+### 4 Update
+- ### 4.1 Set a property
+Use SET to set a property on a node or relationship:
+```
+MATCH (n {name: 'Rik'})
+SET n.surname = 'Rikky'
+RETURN n.name, n.surname
+```
+Result:
+```
+╒════════╤═══════════╕
+│"n.name"│"n.surname"│
+╞════════╪═══════════╡
+│"Rik"   │"Rikky"    │
+└────────┴───────────┘
+```
+- ### 4.2 Remove a property
+```
+MATCH (n {name: 'Rik'})
+SET n.surname = null
+RETURN n.name, n.surname
+```
+Result:
+```
+╒════════╤═══════════╕
+│"n.name"│"n.surname"│
+╞════════╪═══════════╡
+│"Rik"   │null       │
+└────────┴───────────┘
+```
+Or you can use Remove clause:
+```
+MATCH (n {name: 'Rik'})
+Remove n.surname
+RETURN n
+```
+Result:
+```
+╒═════════════════════════════════════════════╕
+│"n"                                          │
+╞═════════════════════════════════════════════╡
+│{"name":"Rik","from":"Belgium","pet":"Orval"}│
+└─────────────────────────────────────────────┘
+```
+### 5 Delete
+To delete a node, use the DELETE clause.
+```
+MATCH (n:Person {name: 'UNKNOWN'})
+DELETE n
+```
+This query is not for deleting large amounts of data, but is useful when experimenting with small example data sets.
+```
+MATCH (n)
+DETACH DELETE n
+```
+When you want to delete a node and any relationship going to or from it, use DETACH DELETE.
+```
+MATCH (n {name: 'Andy'})
+DETACH DELETE n
+```
+It is also possible to delete relationships only, leaving the node(s) otherwise unaffected.
+```
+MATCH (n {name: 'Andy'})-[r:KNOWS]->()
+DELETE r
+```
