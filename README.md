@@ -46,4 +46,208 @@ Neo4j implements the storage of graph data models at the professional database l
   
 ## How to Use Neo4j - Tutorial for CQL  
 
+Cypher is designed for dealing with graph data in Neo4j. CQL stands for Cypher Query Language, just like
+SQL for Oracle.
 
+| |CQL command|Usage|
+|---|----|-----|
+|1|`CREATE`|Create node, relationship, or attribute|
+|2|`MATCH`| Search all the related nodes, relationships, or attributes |
+|3|`RETURN`| Return all the search results |
+|4|`WHERE`| Filter the search result by the clauses |
+|5|`DELETE`| Delete nodes and attributes |
+|6|`REMOVE`| Delete nodes and attributes of relationships |
+|7|`ORDER BY`| Order the search data |
+|8|`SET`| Add or Update labels |
+
+- ### 1. Create Nodes
+- ####1.1 Create single node
+
+Creating a single node:
+```Cypher
+CREATE (n)
+```
+Result:
+```
+Created 1 node, completed after 11 ms.
+```
+
+- ####1.2 Create multiple nodes
+Creating multiple nodes is done by separating them with a comma.
+```Cypher
+CREATE (n),(m)
+```
+Result:
+```
+Created 2 nodes, completed in less than 1 ms.
+```
+
+- ####1.3 Create a node with a label
+You can use the following code to add a node with a label:
+```Cypher
+CREATE (n:Person)
+```
+Result:
+```
+Added 1 label, created 1 node, completed after 24 ms.
+```
+
+- ####1.4 Create a node with multiple labels
+To add labels when creating a node, use the syntax below. In this case, we add two labels.
+```Cypher
+CREATE (n:Person:Xingjian)
+```
+Result:
+```
+Added 2 labels, created 1 node, completed after 39 ms.
+```
+
+- ####1.5 Create node and add labels and properties
+When creating a new node with labels, you can add properties at the same time.
+```Cypher
+CREATE (n:Person {name: 'Xingjian', title: 'Student'})
+```
+Result:
+```
+Added 1 label, created 1 node, set 2 properties, completed after 61 ms.
+```
+
+- ####1.6. Return created node
+Creating a single node is done by issuing the following query:
+```Cypher
+CREATE (a {name: 'Xingjian'})
+RETURN a.name
+```
+Result:
+```
+╒══════════╕
+│"a.name"  │
+╞══════════╡
+│"Xingjian"│
+└──────────┘
+```
+- ### 2. Create Relationships
+- #### 2.1 Create a relationship between two nodes
+To create a relationship between two nodes, we first get the two nodes. Once the nodes are loaded, we simply create a relationship between them.
+```
+MATCH
+  (a:Person),
+  (b:Person)
+WHERE a.name = 'Xingjian' AND b.name = 'Craig'
+CREATE (a)-[r:RELTYPE]->(b)
+RETURN type(r)
+```
+Result:
+```
+╒═════════╕
+│"type(r)"│
+╞═════════╡
+│"RELTYPE"│
+└─────────┘
+```
+- #### 2.2 Create a relationship and set properties
+Setting properties on relationships is done in a similar manner to how it’s done when creating nodes. Note that the values can be any expression.
+```
+MATCH
+  (a:Person),
+  (b:Person)
+WHERE a.name = 'Xingjian' AND b.name = 'Craig'
+CREATE (a)-[r:RELTYPE {name: a.name + '<->' + b.name}]->(b)
+RETURN type(r), r.name
+```
+Result:
+```
+╒═════════╤══════════════════╕
+│"type(r)"│"r.name"          │
+╞═════════╪══════════════════╡
+│"RELTYPE"│"Xingjian<->Craig"│
+└─────────┴──────────────────┘
+```
+- #### 2.3 Create Multiple Nodes and Relationships
+
+```
+CREATE
+(ee:Person { name: "Emil", from: "Sweden", klout: 99})
+(js:Person { name: "Johan",  from: "Sweden", learn: "surfing" }),
+(ir:Person { name: "Ian", from: "England", title: "author" }),
+(rvb:Person { name: "Rik", from:"Belgium", pet: "Orval" }),
+(ally:Person { name: "Allision", from:"California", hobby: "surfing" }),
+( ee )-[:KNOWS {since: 2001}]->(js),
+( ee )-[:KNOWS]->(rvb),
+( js )-[:KNOWS]->(js),
+( ir )-[:KNOWS]->(ally),
+( rvb )-[:KNOWS]->(ally)
+```
+Result:
+```
+Added 5 labels, created 5 nodes, set 16 properties, created 5 relationships, completed after 22 ms.
+```
+![image](/pic/graph.png)
+
+### 3. Search Nodes
+- #### 3.1 Search All Nodes
+Use MATCH clause to search all the nodes.
+```
+MATCH (n) RETURN n
+```
+- #### 3.2 Search Nodes with Specific Lables and Attributes
+Like SQL, you can use Where clause to search nodes with specific attributes or labels and use return to get
+the result.
+```
+MATCH (ee:Person) WHERE ee.name = "Emil" and ee.from = "Sweden" RETURN ee
+```
+Result:
+```
+╒══════════════════════════════════════════╕
+│"ee"                                      │
+╞══════════════════════════════════════════╡
+│{"name":"Emil","from":"Sweden","klout":99}│
+└──────────────────────────────────────────┘
+```
+- ####3.3 Related nodes
+The symbol -- means related to, without regard to type or direction of the relationship.
+```
+MATCH (ee:Person)--(friends) WHERE ee.name = "Rik"
+RETURN ee,friends
+```
+Result:
+```
+╒═════════════════════════════════════════════╤═════════════════════════════════════════════════════════╕
+│"ee"                                         │"friends"                                                │
+╞═════════════════════════════════════════════╪═════════════════════════════════════════════════════════╡
+│{"name":"Rik","from":"Belgium","pet":"Orval"}│{"name":"Allision","from":"California","hobby":"surfing"}│
+├─────────────────────────────────────────────┼─────────────────────────────────────────────────────────┤
+│{"name":"Rik","from":"Belgium","pet":"Orval"}│{"name":"Emil","from":"Sweden","klout":99}               │
+└─────────────────────────────────────────────┴─────────────────────────────────────────────────────────┘
+```
+You can add '[:Relationship Type]' between '--' to specify the certain relationship to search. And you can use --> or <-- to identify the direction of relationship.
+```
+MATCH (ee:Person)-[:KNOWS]->(friends) WHERE ee.name = "Rik"
+RETURN ee,friends
+```
+Result:
+```
+╒═════════════════════════════════════════════╤═════════════════════════════════════════════════════════╕
+│"ee"                                         │"friends"                                                │
+╞═════════════════════════════════════════════╪═════════════════════════════════════════════════════════╡
+│{"name":"Rik","from":"Belgium","pet":"Orval"}│{"name":"Allision","from":"California","hobby":"surfing"}│
+└─────────────────────────────────────────────┴─────────────────────────────────────────────────────────┘
+```
+- #### 3.4 Relationship variable in variable length relationships
+When the connection between two nodes is of variable length, the list of relationships comprising the connection can be returned using the following syntax:
+```
+MATCH (n:Person {name: 'Rik'})-[:KNOWS*2]-(o:Person)
+RETURN n.name,o.name
+```
+Result:
+```
+╒════════╤════════╕
+│"n.name"│"o.name"│
+╞════════╪════════╡
+│"Rik"   │"Johan" │
+├────────┼────────┤
+│"Rik"   │"Ian"   │
+└────────┴────────┘
+```
+
+[graph]:/pic/graph.png
